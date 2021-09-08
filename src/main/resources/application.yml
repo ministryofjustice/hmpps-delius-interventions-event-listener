@@ -1,10 +1,10 @@
 info.app:
-  name: HMPPS Template Kotlin
+  name: Hmpps Delius Interventions Event Listener
   version: 1.0
 
 spring:
   application:
-    name: hmpps-template-kotlin
+    name: hmpps-delius-interventions-event-listener
   codec:
     max-in-memory-size: 10MB
 

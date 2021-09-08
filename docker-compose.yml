@@ -1,10 +1,10 @@
 version: "3"
 services:
-  hmpps-template-kotlin:
+  hmpps-delius-interventions-event-listener:
     build:
       context: .
     network_mode: "host"
-    container_name: hmpps-template-kotlin
+    container_name: hmpps-delius-interventions-event-listener
     ports:
       - "8081:8080"
     healthcheck:
