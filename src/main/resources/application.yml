@@ -3,20 +3,12 @@ info.app:
   version: 1.0
 
 spring:
+  main:
+    banner-mode: off
   application:
     name: hmpps-delius-interventions-event-listener
   codec:
     max-in-memory-size: 10MB
-
-  jackson:
-    date-format: "yyyy-MM-dd HH:mm:ss"
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
-
-  profiles:
-    group:
-      test:
-        - "stdout"
 
 server:
   port: 8080

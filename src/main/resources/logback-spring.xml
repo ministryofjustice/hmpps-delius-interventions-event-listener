@@ -1,60 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="false">
+<configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <property name="LOG_PATTERN"
-              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m | %mdc %n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
 
-    <springProperty scope="context" name="app" source="spring.application.name"/>
-
-
-    <springProfile name="dev || stdout">
-        <appender name="consoleAppender" class="ch.qos.logback.core.helpers.NOPAppender"/>
-        <appender name="logAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${LOG_PATTERN}</Pattern>
-            </layout>
+    <springProfile name="local">
+        <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+                <charset>utf8</charset>
+            </encoder>
         </appender>
+
+        <root level="info">
+            <appender-ref ref="stdout" />
+        </root>
+
+        <logger name="uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener" level="debug" additivity="false">
+            <appender-ref ref="stdout" />
+        </logger>
     </springProfile>
 
-    <springProfile name="!(dev || stdout)">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${LOG_PATTERN}</Pattern>
-            </layout>
+    <springProfile name="!local">
+        <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <loggerName><fieldName>name</fieldName></loggerName>
+                    <timestamp><fieldName>time</fieldName></timestamp>
+                    <message><fieldName>msg</fieldName></message>
+                    <logstashMarkers/>
+                    <arguments/>
+                    <mdc/>
+                    <threadName><fieldName>thread</fieldName></threadName>
+                    <logLevel><fieldName>level</fieldName></logLevel>
+                    <version>
+                        <fieldName>v</fieldName>
+                        <version>0</version>
+                        <writeAsInteger>true</writeAsInteger>
+                    </version>
+                    <nestedField>
+                        <fieldName>err</fieldName>
+                        <providers>
+                            <throwableClassName><fieldName>name</fieldName></throwableClassName>
+                            <stackTrace>
+                                <fieldName>stack</fieldName>
+                                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                                    <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                                    <maxLength>2048</maxLength>
+                                    <shortenedClassNameLength>20</shortenedClassNameLength>
+                                    <rootCauseFirst>false</rootCauseFirst>
+                                    <inlineHash>false</inlineHash>
+                                </throwableConverter>
+                            </stackTrace>
+                            <stackHash><fieldName>stack_hash</fieldName></stackHash>
+                        </providers>
+                    </nestedField>
+                </providers>
+            </encoder>
         </appender>
-        <appender name="logAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"/>
+
+        <root level="info">
+            <appender-ref ref="stdout" />
+        </root>
     </springProfile>
-
-    <logger name="uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.HmppsDeliusInterventionsEventListenerKt" additivity="false"
-            level="DEBUG">
-        <appender-ref ref="logAppender"/>
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-
-    <logger name="uk.gov.justice.digital.hmpps" additivity="false" level="DEBUG">
-        <appender-ref ref="logAppender"/>
-    </logger>
-
-    <logger name="org.springframework" additivity="false" level="INFO">
-        <appender-ref ref="logAppender"/>
-    </logger>
-
-    <logger name="com.microsoft.applicationinsights" additivity="false" level="INFO">
-        <appender-ref ref="logAppender"/>
-    </logger>
-
-    <logger name="org.apache.catalina" additivity="false" level="INFO">
-        <appender-ref ref="logAppender"/>
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-
-    <logger name="org.springframework.boot" additivity="false" level="INFO">
-        <appender-ref ref="logAppender"/>
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-
-    <root level="INFO">
-        <appender-ref ref="logAppender"/>
-    </root>
-
 </configuration>
