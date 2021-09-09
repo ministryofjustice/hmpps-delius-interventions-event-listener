@@ -3,12 +3,20 @@ plugins {
   kotlin("plugin.spring") version "1.5.30"
 }
 
-configurations {
-  testImplementation { exclude(group = "org.junit.vintage") }
-}
-
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging")
+  implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
+}
+
+dependencyManagement {
+  imports {
+    mavenBom("io.awspring.cloud:spring-cloud-aws-messaging:2.3.2")
+  }
+}
+
+configurations {
+  testImplementation { exclude(group = "org.junit.vintage") }
 }
 
 java {

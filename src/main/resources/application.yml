@@ -41,3 +41,9 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+cloud:
+  aws:
+    region:
+      static: eu-west-2
+      auto: false

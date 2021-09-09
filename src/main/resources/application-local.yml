@@ -1,0 +1,13 @@
+server:
+  port: 7070
+
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: test
+    sns:
+      endpoint: http://localhost:4566
+    sqs:
+      endpoint: http://localhost:4566
+      queue.name: delius-intervention-events-queue
