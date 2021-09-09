@@ -6,8 +6,7 @@ cloud:
     credentials:
       access-key: test
       secret-key: test
-    sns:
-      endpoint: http://localhost:4566
     sqs:
       endpoint: http://localhost:4566
-      queue.name: delius-intervention-events-queue
+      queues:
+        interventions-events: delius-intervention-events-queue
