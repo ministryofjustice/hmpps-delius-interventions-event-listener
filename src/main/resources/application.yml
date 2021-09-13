@@ -9,6 +9,17 @@ spring:
     name: hmpps-delius-interventions-event-listener
   codec:
     max-in-memory-size: 10MB
+  security:
+    oauth2:
+      client:
+        provider:
+          hmpps-auth:
+            token-uri: ${services.hmpps-auth.baseurl}/oauth/token
+        registration:
+          interventions-client:
+            provider: hmpps-auth
+            authorization-grant-type: client_credentials
+            scope: read,write
 
 server:
   port: 8080
@@ -46,3 +57,9 @@ cloud:
   aws:
     region:
       static: eu-west-2
+
+services:
+  interventions-api:
+    connect-timeout-seconds: 30
+    read-timeout-seconds: 5
+    write-timeout-seconds: 5

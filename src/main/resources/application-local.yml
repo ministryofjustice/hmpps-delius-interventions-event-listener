@@ -1,6 +1,15 @@
 server:
   port: 7070
 
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          interventions-client:
+            client-id: interventions
+            client-secret: clientsecret
+
 cloud:
   aws:
     credentials:
@@ -10,3 +19,9 @@ cloud:
       endpoint: http://localhost:4566
       queues:
         interventions-events: delius-intervention-events-queue
+
+services:
+  hmpps-auth:
+    baseurl: http://hmpps-auth:8090/auth
+  interventions-api:
+    baseurl: http://localhost:8080

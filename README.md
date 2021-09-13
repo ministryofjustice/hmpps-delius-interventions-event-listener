@@ -22,10 +22,10 @@ docker-compose up -d
 
 ### Build and Run
 
-Java 16 is required to build and run the application. Use of [jenv](https://github.com/jenv/jenv) is recommended. You may also have to tweak your default IntelliJ configuration to use the correct JRE. Run the application from the commandline or using IntelliJ e.g.
+Java 16 is required to build and run the application. Use of [jenv](https://github.com/jenv/jenv) is recommended. You may also have to tweak your default IntelliJ configuration to use the correct JRE. Run the application with the 'local' profile using IntelliJ or from the commandline e.g.
 
 ```
-./gradlew bootRun
+SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 ```
 
 
