@@ -16,6 +16,12 @@ jobs:
     executor:
       name: hmpps/java
       tag: "16.0"
+    docker:
+      - image: cimg/openjdk:16.0
+      - image: localstack/localstack:latest
+        environment:
+          SERVICES: sns,sqs
+          DEFAULT_REGION: eu-west-2
     steps:
       - checkout
       - restore_cache:
