@@ -11,8 +11,6 @@ generic-service:
 
   ingress:
     enabled: true
-    host: app-hostname.local    # override per environment
-    tlsSecretName: hmpps-delius-interventions-event-listener-cert
     path: /
 
   # Environment variables to load into the deployment
