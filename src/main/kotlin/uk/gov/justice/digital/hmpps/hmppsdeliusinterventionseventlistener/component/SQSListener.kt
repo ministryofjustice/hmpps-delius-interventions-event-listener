@@ -7,13 +7,18 @@ import mu.KLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.EventProcessor
 
 @Component
-class SQSListener {
+class SQSListener(
+  private val eventProcessor: EventProcessor,
+) {
   companion object : KLogging()
 
   @SqsListener(value = ["\${cloud.aws.sqs.queues.interventions-events}"], deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
   fun listener(@NotificationMessage event: InterventionsEvent) {
-    logger.info("event received {}", StructuredArguments.kv("event", event))
+
+    logger.debug("event received {}", StructuredArguments.kv("event", event))
+    eventProcessor.process(event)
   }
 }

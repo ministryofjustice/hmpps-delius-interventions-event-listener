@@ -9,6 +9,9 @@ spring:
           interventions-client:
             client-id: interventions
             client-secret: clientsecret
+          community-api-client:
+            client-id: community-api-client
+            client-secret: community-api-client
 
 cloud:
   aws:
@@ -25,3 +28,5 @@ services:
     baseurl: http://hmpps-auth:8090/auth
   interventions-api:
     baseurl: http://localhost:8080
+  community-api:
+    baseurl: http://localhost:8091

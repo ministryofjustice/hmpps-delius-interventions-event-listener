@@ -20,6 +20,10 @@ spring:
             provider: hmpps-auth
             authorization-grant-type: client_credentials
             scope: read,write
+          community-api-client:
+            provider: hmpps-auth
+            authorization-grant-type: client_credentials
+            scope: read
 
 server:
   port: 8080
@@ -63,3 +67,11 @@ services:
     connect-timeout-seconds: 30
     read-timeout-seconds: 5
     write-timeout-seconds: 5
+  community-api:
+    connect-timeout-seconds: 30
+    read-timeout-seconds: 10
+    write-timeout-seconds: 10
+
+community-api:
+  integration-context: commissioned-rehabilitation-services
+  notification-request-url: "/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}"
