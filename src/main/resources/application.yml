@@ -57,6 +57,9 @@ cloud:
   aws:
     region:
       static: eu-west-2
+    sqs:
+      listener:
+        visibility-timeout: 120
 
 services:
   interventions-api:
