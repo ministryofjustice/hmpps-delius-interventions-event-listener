@@ -26,7 +26,14 @@ generic-service:
 
   namespace_secrets:
     application-insights:
-      APPLICATIONINSIGHTS_CONNECTION_STRING: "connection_string"
+      APPLICATIONINSIGHTS_CONNECTION_STRING: connection_string
+    hmpps-auth:
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSCLIENT_CLIENTID: interventions-service-client-id.txt
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSCLIENT_CLIENTSECRET: interventions-service-client-secret.txt
+    hmpps-delius-interventions-event-listener-queue:
+      CLOUD_AWS_CREDENTIALS_ACCESSKEY: access_key_id
+      CLOUD_AWS_CREDENTIALS_SECRETKEY: secret_access_key
+      CLOUD_AWS_SQS_QUEUES_INTERVENTIONSEVENTS: sqs_name
 
   allowlist:
     office: "217.33.148.210/32"
