@@ -2,14 +2,14 @@ package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.servi
 
 import mu.KLogging
 import net.logstash.logback.argument.StructuredArguments
-import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
+import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.InterventionsEvent
 
 enum class EventType(val value: String) {
   ACTION_PLAN_SUBMITTED("intervention.action-plan.submitted"),
 }
 
-@Service
+@Component
 class EventProcessor(
   private val interventionsApiService: InterventionsApiService,
   private val communityApiService: CommunityApiService,

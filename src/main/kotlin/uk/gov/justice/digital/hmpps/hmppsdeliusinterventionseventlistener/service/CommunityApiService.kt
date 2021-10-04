@@ -1,17 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service
 
 import mu.KLogging
-import net.logstash.logback.argument.StructuredArguments
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.ActionPlan
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.Intervention
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.SentReferral
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.exception.CommunityApiErrorHandler
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.ActionPlan
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.Intervention
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.SentReferral
 import java.nio.charset.StandardCharsets
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -20,19 +19,11 @@ import javax.validation.constraints.NotNull
 @Service
 class CommunityApiService(
   private val communityApiWebClient: WebClient,
+  private val communityApiErrorHandler: CommunityApiErrorHandler,
   @Value("\${community-api.notification-request-url}") private val communityApiNotificationUrl: String,
   @Value("\${community-api.integration-context}") private val integrationContext: String,
 ) {
   companion object : KLogging()
-
-  fun getInfo() {
-    communityApiWebClient.get()
-      .uri("/info")
-      .defaultHeaders()
-      .retrieve()
-      .bodyToMono(String::class.java)
-      .subscribe(logger::info)
-  }
 
   fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention) {
     val body = NotificationCreateRequest(
@@ -59,18 +50,7 @@ class CommunityApiService(
       .retrieve()
       .bodyToMono(Contact::class.java)
       .onErrorMap { error ->
-        val errorMessage = when (error) {
-          is BadRequest -> error.responseBodyAsString
-          else -> error.localizedMessage
-        }
-        logger.error(
-          "Call to community api failed [$errorMessage]",
-          error,
-          StructuredArguments.kv("req.url", detailUrl),
-          StructuredArguments.kv("req.body", body),
-          StructuredArguments.kv("res.body", errorMessage),
-          StructuredArguments.kv("res.causeMessage", error.message)
-        )
+        communityApiErrorHandler.handleResponse(error, communityApiUri, body)
         throw error
       }
       .block()

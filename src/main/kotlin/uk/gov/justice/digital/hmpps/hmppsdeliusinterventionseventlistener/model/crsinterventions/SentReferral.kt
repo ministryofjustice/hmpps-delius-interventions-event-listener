@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model
+package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions
 
 import java.time.OffsetDateTime
 import java.util.UUID
