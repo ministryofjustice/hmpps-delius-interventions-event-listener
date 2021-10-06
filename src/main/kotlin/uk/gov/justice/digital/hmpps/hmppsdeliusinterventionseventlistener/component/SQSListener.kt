@@ -19,7 +19,6 @@ class SQSListener(
   fun listener(rawMessage: String) {
     val notification = objectMapper.readValue(rawMessage, NotificationMessage::class.java)
     val event = objectMapper.readValue(notification.message, InterventionsEvent::class.java)
-    logger.info("event received {}", StructuredArguments.kv("event", event))
     eventProcessor.process(event)
   }
 }
