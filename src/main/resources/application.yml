@@ -57,13 +57,8 @@ management:
       cache:
         time-to-live: 2000ms
 
-cloud:
-  aws:
-    region:
-      static: eu-west-2
-    sqs:
-      listener:
-        visibility-timeout: 120
+hmpps.sqs:
+  region: eu-west-2
 
 services:
   interventions-api:
