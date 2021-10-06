@@ -4,8 +4,10 @@ import mu.KLogging
 import net.logstash.logback.argument.StructuredArguments.kv
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ActionPlan
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.CommunityApiService
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.InterventionsApiService
+import java.net.URI
 
 private enum class EventType(val value: String) {
   ACTION_PLAN_SUBMITTED("intervention.action-plan.submitted"),
@@ -28,9 +30,9 @@ class EventProcessor(
   }
 
   fun processActionPlanSubmittedEvent(event: InterventionsEvent) {
-    val actionPlan = interventionsApiService.getActionPlan(event.detailUrl)
-    val referral = interventionsApiService.getReferral(actionPlan.referralId)
-    val intervention = interventionsApiService.getIntervention(referral.interventionId)
+    val actionPlan = interventionsApiService.get(URI(event.detailUrl), ActionPlan::class).block()
+    val referral = interventionsApiService.getReferral(actionPlan.referralId).block()
+    val intervention = interventionsApiService.getIntervention(referral.interventionId).block()
 
     logger.debug("processing action plan submitted event {} {} {}", kv("actionPlan", actionPlan), kv("referral", referral), kv("intervention", intervention))
     communityApiService.notifyActionPlanSubmitted(event.detailUrl, actionPlan, referral, intervention)
