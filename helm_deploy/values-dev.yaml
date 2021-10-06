@@ -11,6 +11,13 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     SERVICES_INTERVENTIONSAPI_BASEURL: https://hmpps-interventions-service-dev.apps.live-1.cloud-platform.service.justice.gov.uk
     SERVICES_HMPPSAUTH_BASEURL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+    SERVICES_COMMUNITYAPI_BASEURL: https://community-api-secure.test.delius.probation.hmpps.dsd.io
+
+  # use the same client credentials for community api and interventions api in dev
+  namespace_secrets:
+    hmpps-auth:
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_COMMUNITYAPICLIENT_CLIENTID: interventions-service-client-id.txt
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_COMMUNITYAPICLIENT_CLIENTSECRET: interventions-service-client-secret.txt
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

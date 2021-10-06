@@ -73,7 +73,3 @@ services:
     connect-timeout-seconds: 30
     read-timeout-seconds: 10
     write-timeout-seconds: 10
-
-community-api:
-  integration-context: commissioned-rehabilitation-services
-  notification-request-url: "/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}"

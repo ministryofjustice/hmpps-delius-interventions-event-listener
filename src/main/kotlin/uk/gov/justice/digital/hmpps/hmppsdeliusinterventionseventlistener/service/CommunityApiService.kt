@@ -1,12 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service
 
 import mu.KLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
-import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.exception.CommunityApiErrorHandler
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.ActionPlan
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.Intervention
@@ -14,19 +12,18 @@ import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.
 import java.nio.charset.StandardCharsets
 import java.time.OffsetDateTime
 import java.util.UUID
-import javax.validation.constraints.NotNull
 
 @Service
 class CommunityApiService(
   private val communityApiWebClient: WebClient,
   private val communityApiErrorHandler: CommunityApiErrorHandler,
-  @Value("\${community-api.notification-request-url}") private val communityApiNotificationUrl: String,
-  @Value("\${community-api.integration-context}") private val integrationContext: String,
 ) {
-  companion object : KLogging()
+  companion object : KLogging() {
+    const val integrationContext = "commissioned-rehabilitation-services"
+  }
 
   fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention) {
-    val body = NotificationCreateRequest(
+    val body = CreateNotificationRequest(
       intervention.contractType.code,
       referral.sentAt,
       referral.id,
@@ -40,13 +37,15 @@ class CommunityApiService(
       ),
     )
 
-    val communityApiUri = UriComponentsBuilder.fromPath(communityApiNotificationUrl)
+    val communityApiUri = UriComponentsBuilder
+      .fromPath("/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}")
       .buildAndExpand(referral.serviceUserCRN, referral.relevantSentenceId, integrationContext)
       .toString()
 
     communityApiWebClient.post()
       .uri(communityApiUri)
-      .body(Mono.just(body), NotificationCreateRequest::class.java)
+      .bodyValue(body)
+      .defaultHeaders()
       .retrieve()
       .bodyToMono(Contact::class.java)
       .onErrorMap { error ->
@@ -63,8 +62,11 @@ class CommunityApiService(
     url: String,
     eventTypeDescription: String
   ): String {
-    return "$eventTypeDescription for $contractTypeName Referral $referenceNumber with Prime Provider $primeProviderName\n" +
-      "$url\n(notified via interventions-event-listener)"
+    return """
+      $eventTypeDescription for $contractTypeName Referral $referenceNumber with Prime Provider $primeProviderName
+      $url
+      (notified via delius-interventions-event-listener)
+    """.trimIndent()
   }
 
   private fun WebClient.RequestHeadersSpec<*>.defaultHeaders(): WebClient.RequestHeadersSpec<*> {
@@ -74,7 +76,7 @@ class CommunityApiService(
   }
 }
 
-data class NotificationCreateRequest(
+private data class CreateNotificationRequest(
   val contractType: String,
   val referralStart: OffsetDateTime,
   val referralId: UUID,
@@ -82,6 +84,6 @@ data class NotificationCreateRequest(
   val notes: String
 )
 
-data class Contact(
-  @NotNull val contactId: Long
+private data class Contact(
+  val contactId: Long
 )
