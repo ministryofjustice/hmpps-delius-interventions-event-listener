@@ -13,15 +13,19 @@ spring:
             client-id: community-api-client
             client-secret: community-api-client
 
-cloud:
-  aws:
-    credentials:
-      access-key: test
-      secret-key: test
-    sqs:
-      endpoint: http://localhost:4566
-      queues:
-        interventions-events: delius-intervention-events-queue
+hmpps.sqs:
+  provider: localstack
+  queues:
+    delius-interventions-events-queue:
+      queueName:  delius-interventions-events-queue
+      queueAccessKeyId: test
+      queueSecretAccessKey: test
+      dlqName: delius-interventions-events-dlq
+      subscribeTopicId: intervention-events-topic
+      subscribeFilter: '{"eventType":[ { "prefix": "intervention." } ] }'
+  topics:
+    intervention-events-topic:
+      arn: arn:aws:sns:${hmpps.sqs.region}:000000000000:intervention-events-local
 
 services:
   hmpps-auth:

@@ -7,9 +7,10 @@ dependencies {
   // web & security
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
   // aws
-  implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.2")
 
   // monitoring & logging
   implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")

@@ -24,6 +24,10 @@ spring:
             provider: hmpps-auth
             authorization-grant-type: client_credentials
             scope: read
+      resourceserver:
+        jwt:
+          issuer-uri: ${services.hmpps-auth.baseurl}/issuer
+          jwk-set-uri: ${services.hmpps-auth.baseurl}/.well-known/jwks.json
 
 server:
   port: 8080
@@ -57,10 +61,8 @@ management:
       cache:
         time-to-live: 2000ms
 
-cloud:
-  aws:
-    region:
-      static: eu-west-2
+hmpps.sqs:
+  region: eu-west-2
 
 services:
   interventions-api:

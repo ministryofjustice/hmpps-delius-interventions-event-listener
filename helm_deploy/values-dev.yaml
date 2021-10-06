@@ -5,10 +5,12 @@ generic-service:
   replicaCount: 1
 
   ingress:
-    host: hmpps-delius-interventions-event-listener-dev.hmpps.service.justice.gov.uk
+    host: hmpps-delius-interventions-event-listener-dev.apps.live-1.cloud-platform.service.justice.gov.uk
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+    SERVICES_INTERVENTIONSAPI_BASEURL: https://hmpps-interventions-service-dev.apps.live-1.cloud-platform.service.justice.gov.uk
+    SERVICES_HMPPSAUTH_BASEURL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

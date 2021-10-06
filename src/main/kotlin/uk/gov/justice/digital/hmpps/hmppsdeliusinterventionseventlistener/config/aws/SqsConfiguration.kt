@@ -1,29 +1,49 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.config.aws
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.awspring.cloud.messaging.config.QueueMessageHandlerFactory
-import io.awspring.cloud.messaging.support.NotificationMessageArgumentResolver
+import com.amazon.sqs.javamessaging.ProviderConfiguration
+import com.amazon.sqs.javamessaging.SQSConnectionFactory
+import com.amazonaws.services.sqs.AmazonSQS
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.messaging.converter.MappingJackson2MessageConverter
-import org.springframework.messaging.converter.MessageConverter
+import org.springframework.jms.annotation.EnableJms
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory
+import org.springframework.jms.listener.DefaultMessageListenerContainer
+import uk.gov.justice.hmpps.sqs.HmppsQueueDestinationResolver
+import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
+import javax.jms.Session
 
 @Configuration
-class SqsConfiguration {
-  @Bean
-  fun queueMessageHandlerFactory(messageConverter: MessageConverter): QueueMessageHandlerFactory {
-    val factory = QueueMessageHandlerFactory()
-    factory.setArgumentResolvers(listOf(NotificationMessageArgumentResolver(messageConverter)))
-    return factory
+@EnableJms
+class SQSConfiguration {
+  companion object {
+    const val queueId = "delius-interventions-events-queue"
   }
 
-  @Bean
-  protected fun messageConverter(): MessageConverter? {
-    val converter = MappingJackson2MessageConverter()
-    converter.objectMapper.registerKotlinModule()
-    converter.objectMapper.registerModule(JavaTimeModule())
-    converter.isStrictContentTypeMatch = false
-    return converter
+  // the bean name here is important so that this bean overrides the
+  // correct 'hmpps-sqs' bean (which does not allow custom configuration)
+  @Bean @Qualifier("$queueId-jms-listener-factory")
+  fun jmsListenerContainerFactory(
+    @Qualifier("$queueId-sqs-client") sqs: AmazonSQS,
+    hmppsSqsProperties: HmppsSqsProperties,
+  ): DefaultJmsListenerContainerFactory {
+    return CustomJmsListenerContainerFactory().apply {
+      setConnectionFactory(SQSConnectionFactory(ProviderConfiguration(), sqs))
+      setDestinationResolver(HmppsQueueDestinationResolver(hmppsSqsProperties))
+      setConcurrency("1-1")
+      setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE)
+    }
+  }
+}
+
+class CustomMessageListenerContainer : DefaultMessageListenerContainer() {
+  override fun rollbackOnExceptionIfNecessary(session: Session, ex: Throwable) {
+    // do nothing (the default listener 'negative acknowledges' the message, zeroing the visibility timeout)
+  }
+}
+
+class CustomJmsListenerContainerFactory : DefaultJmsListenerContainerFactory() {
+  override fun createContainerInstance(): DefaultMessageListenerContainer {
+    return CustomMessageListenerContainer()
   }
 }

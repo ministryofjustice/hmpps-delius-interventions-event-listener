@@ -11,16 +11,12 @@ generic-service:
 
   ingress:
     enabled: true
-    host: app-hostname.local    # override per environment
-    tlsSecretName: hmpps-delius-interventions-event-listener-cert
     path: /
 
   # Environment variables to load into the deployment
   env:
     JAVA_OPTS: "-Xmx512m"
     SERVER_PORT: "8080"
-    SPRING_PROFILES_ACTIVE: "logstash"
-    APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY)"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
@@ -29,8 +25,19 @@ generic-service:
   #     [name of environment variable as seen by app]: [key of kubernetes secret to load]
 
   namespace_secrets:
-    hmpps-delius-interventions-event-listener:
-      APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
+    application-insights:
+      APPLICATIONINSIGHTS_CONNECTION_STRING: connection_string
+    hmpps-auth:
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSCLIENT_CLIENTID: interventions-service-client-id.txt
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSCLIENT_CLIENTSECRET: interventions-service-client-secret.txt
+    hmpps-delius-interventions-event-listener-queue:
+      HMPPS_SQS_QUEUES_DELIUSINTERVENTIONSEVENTSQUEUE_QUEUE_ACCESS_KEY_ID: access_key_id
+      HMPPS_SQS_QUEUES_DELIUSINTERVENTIONSEVENTSQUEUE_QUEUE_SECRET_ACCESS_KEY: secret_access_key
+      HMPPS_SQS_QUEUES_DELIUSINTERVENTIONSEVENTSQUEUE_QUEUE_NAME: sqs_name
+    hmpps-delius-interventions-event-listener-dlq:
+      HMPPS_SQS_QUEUES_DELIUSINTERVENTIONSEVENTSQUEUE_DLQ_ACCESS_KEY_ID: access_key_id
+      HMPPS_SQS_QUEUES_DELIUSINTERVENTIONSEVENTSQUEUE_DLQ_SECRET_ACCESS_KEY: secret_access_key
+      HMPPS_SQS_QUEUES_DELIUSINTERVENTIONSEVENTSQUEUE_DLQ_NAME: sqs_name
 
   allowlist:
     office: "217.33.148.210/32"
