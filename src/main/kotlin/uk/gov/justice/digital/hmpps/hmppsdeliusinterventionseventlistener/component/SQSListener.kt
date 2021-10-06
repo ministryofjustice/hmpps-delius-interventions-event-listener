@@ -6,7 +6,7 @@ import mu.KLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.InterventionsEvent
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
 
 @Component
 class SQSListener(

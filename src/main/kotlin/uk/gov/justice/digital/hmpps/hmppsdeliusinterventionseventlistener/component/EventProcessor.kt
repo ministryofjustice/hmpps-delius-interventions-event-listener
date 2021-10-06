@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.compo
 import mu.KLogging
 import net.logstash.logback.argument.StructuredArguments.kv
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.InterventionsEvent
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.CommunityApiService
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.InterventionsApiService
 
