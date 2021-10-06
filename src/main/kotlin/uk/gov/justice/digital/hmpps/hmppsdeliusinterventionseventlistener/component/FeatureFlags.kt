@@ -5,6 +5,6 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConfigurationProperties(prefix = "features")
-data class FeatureFlags (
+data class FeatureFlags(
   val crs: Map<String, Boolean>
 )

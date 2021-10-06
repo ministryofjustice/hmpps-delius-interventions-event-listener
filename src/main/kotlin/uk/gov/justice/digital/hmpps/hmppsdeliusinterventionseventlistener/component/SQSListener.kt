@@ -15,7 +15,7 @@ class SQSListener(
 ) {
   companion object : KLogging()
 
-  @JmsListener(destination = "delius-interventions-events-queue", containerFactory = "hmppsQueueContainerFactoryProxy")
+  @JmsListener(destination = "deliusinterventionseventsqueue", containerFactory = "hmppsQueueContainerFactoryProxy")
   fun listener(rawMessage: String) {
     val notification = objectMapper.readValue(rawMessage, NotificationMessage::class.java)
     val event = objectMapper.readValue(notification.message, InterventionsEvent::class.java)

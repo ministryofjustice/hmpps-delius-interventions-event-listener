@@ -16,15 +16,13 @@ spring:
 hmpps.sqs:
   provider: localstack
   queues:
-    delius-interventions-events-queue:
+    deliusinterventionseventsqueue:
       queueName:  delius-interventions-events-queue
-      queueAccessKeyId: test
-      queueSecretAccessKey: test
       dlqName: delius-interventions-events-dlq
-      subscribeTopicId: intervention-events-topic
+      subscribeTopicId: interventioneventstopic
       subscribeFilter: '{"eventType":[ { "prefix": "intervention." } ] }'
   topics:
-    intervention-events-topic:
+    interventioneventstopic:
       arn: arn:aws:sns:${hmpps.sqs.region}:000000000000:intervention-events-local
 
 services:

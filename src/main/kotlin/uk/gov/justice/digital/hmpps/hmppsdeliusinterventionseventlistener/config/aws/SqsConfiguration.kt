@@ -17,7 +17,7 @@ import javax.jms.Session
 @EnableJms
 class SQSConfiguration {
   companion object {
-    const val queueId = "delius-interventions-events-queue"
+    const val queueId = "deliusinterventionseventsqueue"
   }
 
   // the bean name here is important so that this bean overrides the
