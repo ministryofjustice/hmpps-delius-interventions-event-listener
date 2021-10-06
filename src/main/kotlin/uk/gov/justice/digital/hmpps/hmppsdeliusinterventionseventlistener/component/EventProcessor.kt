@@ -1,11 +1,13 @@
-package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service
+package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component
 
 import mu.KLogging
-import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.kv
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crsinterventions.InterventionsEvent
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.CommunityApiService
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.InterventionsApiService
 
-enum class EventType(val value: String) {
+private enum class EventType(val value: String) {
   ACTION_PLAN_SUBMITTED("intervention.action-plan.submitted"),
 }
 
@@ -17,25 +19,20 @@ class EventProcessor(
   companion object : KLogging()
 
   fun process(event: InterventionsEvent) {
-
     when (event.eventType) {
       EventType.ACTION_PLAN_SUBMITTED.value -> processActionPlanSubmittedEvent(event)
-      else -> logger.info("event type ${event.eventType} not supported")
+      else -> return
     }
+
+    logger.debug("event processed successfully {}", kv("event", event))
   }
 
   fun processActionPlanSubmittedEvent(event: InterventionsEvent) {
-
     val actionPlan = interventionsApiService.getActionPlan(event.detailUrl)
     val referral = interventionsApiService.getReferral(actionPlan.referralId)
     val intervention = interventionsApiService.getIntervention(referral.interventionId)
 
-    logger.debug("actionPlan=$actionPlan")
-    logger.debug("referral=$referral")
-    logger.debug("intervention=$intervention")
-
+    logger.debug("processing action plan submitted event {} {} {}", kv("actionPlan", actionPlan), kv("referral", referral), kv("intervention", intervention))
     communityApiService.notifyActionPlanSubmitted(event.detailUrl, actionPlan, referral, intervention)
-
-    logger.debug("event notified {}", StructuredArguments.kv("event", event))
   }
 }
