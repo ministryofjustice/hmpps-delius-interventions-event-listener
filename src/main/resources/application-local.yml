@@ -34,3 +34,7 @@ services:
     baseurl: http://localhost:8080
   community-api:
     baseurl: http://localhost:8091
+
+features:
+  crs:
+    notify-action-plan-submitted: true

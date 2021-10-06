@@ -73,3 +73,8 @@ services:
     connect-timeout-seconds: 30
     read-timeout-seconds: 10
     write-timeout-seconds: 10
+
+# all features should be disabled by default and enabled per-environment
+features:
+  crs:
+    notify-action-plan-submitted: false
