@@ -20,6 +20,10 @@ spring:
             provider: hmpps-auth
             authorization-grant-type: client_credentials
             scope: read,write
+      resourceserver:
+        jwt:
+          issuer-uri: ${services.hmpps-auth.baseurl}/issuer
+          jwk-set-uri: ${services.hmpps-auth.baseurl}/.well-known/jwks.json
 
 server:
   port: 8080

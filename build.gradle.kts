@@ -7,6 +7,7 @@ dependencies {
   // web & security
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
   // aws
   implementation("io.awspring.cloud:spring-cloud-starter-aws-messaging")
