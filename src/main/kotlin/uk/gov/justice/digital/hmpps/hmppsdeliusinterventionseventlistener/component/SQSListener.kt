@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.compo
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KLogging
-import net.logstash.logback.argument.StructuredArguments
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
