@@ -20,6 +20,10 @@ spring:
             provider: hmpps-auth
             authorization-grant-type: client_credentials
             scope: read,write
+          community-api-client:
+            provider: hmpps-auth
+            authorization-grant-type: client_credentials
+            scope: read
       resourceserver:
         jwt:
           issuer-uri: ${services.hmpps-auth.baseurl}/issuer
@@ -65,3 +69,12 @@ services:
     connect-timeout-seconds: 30
     read-timeout-seconds: 5
     write-timeout-seconds: 5
+  community-api:
+    connect-timeout-seconds: 30
+    read-timeout-seconds: 10
+    write-timeout-seconds: 10
+
+# all features should be disabled by default and enabled per-environment
+features:
+  crs:
+    notify-action-plan-submitted: false

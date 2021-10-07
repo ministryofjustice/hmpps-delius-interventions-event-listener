@@ -22,19 +22,37 @@ class WebClientConfiguration(
   @Value("\${services.interventions-api.connect-timeout-seconds}") private val interventionsApiConnectTimeout: Int,
   @Value("\${services.interventions-api.read-timeout-seconds}") private val interventionsApiReadTimeout: Int,
   @Value("\${services.interventions-api.write-timeout-seconds}") private val interventionsApiWriteTimeout: Int,
+  @Value("\${services.community-api.baseurl}") private val communityApiBaseUrl: String,
+  @Value("\${services.community-api.connect-timeout-seconds}") private val communityApiConnectTimeout: Int,
+  @Value("\${services.community-api.read-timeout-seconds}") private val communityApiReadTimeout: Int,
+  @Value("\${services.community-api.write-timeout-seconds}") private val communityApiWriteTimeout: Int,
 ) {
   companion object {
-    const val defaultClientRegistrationId = "interventions-client"
+    const val interventionsClientRegistrationId = "interventions-client"
+    const val communityApiClientRegistrationId = "community-api-client"
   }
 
   @Bean
   fun interventionsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     return createAuthorizedWebClient(
       authorizedClientManager,
+      interventionsClientRegistrationId,
       interventionsApiBaseUrl,
       interventionsApiConnectTimeout,
       interventionsApiReadTimeout,
       interventionsApiWriteTimeout
+    )
+  }
+
+  @Bean
+  fun communityApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    return createAuthorizedWebClient(
+      authorizedClientManager,
+      communityApiClientRegistrationId,
+      communityApiBaseUrl,
+      communityApiConnectTimeout,
+      communityApiReadTimeout,
+      communityApiWriteTimeout
     )
   }
 
@@ -56,13 +74,14 @@ class WebClientConfiguration(
 
   private fun createAuthorizedWebClient(
     clientManager: OAuth2AuthorizedClientManager,
+    clientRegistrationId: String,
     baseUrl: String,
     connectTimeoutInSeconds: Int,
     readTimeoutInSeconds: Int,
     writeTimeoutInSeconds: Int,
   ): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(clientManager)
-    oauth2Client.setDefaultClientRegistrationId(defaultClientRegistrationId)
+    oauth2Client.setDefaultClientRegistrationId(clientRegistrationId)
 
     val httpClient = HttpClient.create()
       .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutInSeconds * 1000)
