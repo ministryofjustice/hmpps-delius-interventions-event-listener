@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.servic
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.InterventionsApiService
 import java.net.URI
 
-private enum class EventType(val value: String) {
+enum class EventType(val value: String) {
   ACTION_PLAN_SUBMITTED("intervention.action-plan.submitted");
 
   companion object {
