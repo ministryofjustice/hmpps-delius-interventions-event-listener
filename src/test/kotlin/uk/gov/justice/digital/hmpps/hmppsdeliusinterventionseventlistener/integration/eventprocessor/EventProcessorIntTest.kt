@@ -12,7 +12,11 @@ import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.compon
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.EventType
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.*
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ActionPlan
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ContractType
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ServiceProvider
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.CommunityApiService
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.InterventionsApiService
 import java.time.OffsetDateTime
@@ -20,7 +24,7 @@ import java.util.UUID
 
 class EventProcessorIntTest @Autowired constructor(
   private val eventProcessor: EventProcessor,
-): IntegrationTestBase() {
+) : IntegrationTestBase() {
   @MockBean lateinit var interventionsApiService: InterventionsApiService
   @MockBean lateinit var communityApiService: CommunityApiService
 
