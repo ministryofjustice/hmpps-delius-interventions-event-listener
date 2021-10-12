@@ -19,12 +19,20 @@ abstract class IntegrationTestBase {
   lateinit var webTestClient: WebTestClient
 
   fun noMessagesCurrentlyOnQueue(client: AmazonSQS, queueUrl: String) {
+    messagesCurrentlyOnQueue(client, queueUrl, 0)
+  }
+
+  fun oneMessageCurrentlyOnQueue(client: AmazonSQS, queueUrl: String) {
+    messagesCurrentlyOnQueue(client, queueUrl, 1)
+  }
+
+  fun messagesCurrentlyOnQueue(client: AmazonSQS, queueUrl: String, expectedNumber: Int) {
     await untilCallTo {
       getNumberOfMessagesCurrentlyOnQueue(
         client,
         queueUrl
       )
-    } matches { it == 0 }
+    } matches { it == expectedNumber }
   }
 
   private fun getNumberOfMessagesCurrentlyOnQueue(sqsClient: AmazonSQS, queueUrl: String): Int? {

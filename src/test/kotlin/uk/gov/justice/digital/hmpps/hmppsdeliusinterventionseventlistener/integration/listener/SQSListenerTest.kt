@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,6 +50,9 @@ class SQSListenerTest : IntegrationTestBase() {
   @Value("\${hmpps.sqs.queues.deliusinterventionseventsqueue.queueName}")
   lateinit var interventionsEventQueue: String
 
+  @Value("\${hmpps.sqs.queues.deliusinterventionseventsqueue.dlqName}")
+  lateinit var interventionsEventDeadLetterQueue: String
+
   @Value("\${hmpps.sqs.region}")
   lateinit var region: String
 
@@ -65,6 +69,8 @@ class SQSListenerTest : IntegrationTestBase() {
 
   private var queueUrl: String? = null
 
+  private var deadLetterQueueUrl: String? = null
+
   @BeforeEach
   fun beforeEach() {
     snsClient = SnsClient.builder()
@@ -74,6 +80,8 @@ class SQSListenerTest : IntegrationTestBase() {
       .build()
     queueUrl = sqsClient.getQueueUrl(interventionsEventQueue).queueUrl
     sqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
+    deadLetterQueueUrl = sqsClient.getQueueUrl(interventionsEventDeadLetterQueue).queueUrl
+    sqsClient.purgeQueue(PurgeQueueRequest(deadLetterQueueUrl))
   }
 
   @Test
@@ -93,18 +101,39 @@ class SQSListenerTest : IntegrationTestBase() {
     val communityApiBaseUrl = "http://localhost:8091"
     val notificationRequestBody = buildNotificationRequest(intervention, referral, actionPlan)
 
-    setupCommunityApiCall(communityApiBaseUrl, notificationRequestBody)
+    setUpCommunityApiCall(communityApiBaseUrl, notificationRequestBody)
 
     // When
-    val message = setUpMessage(interventionsBaseUrl, actionPlan)
+    val message = setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl, actionPlan)
     snsClient!!.publish(message)
 
     // Then
     verifyCommunityApiCall(communityApiBaseUrl, notificationRequestBody)
   }
 
+  @Test
+  fun `Message is placed in ded letter queue after successive failures`() {
+
+    // Given
+    val serviceProvider = ServiceProvider("SP Name", "55555")
+    val intervention = Intervention(UUID.randomUUID(), "Title", "Desc", serviceProvider, ContractType("ACC", "Accommodation"))
+    val referral = SentReferral(UUID.randomUUID(), intervention.id, "CRN444", 123L, "ABCDEFGH", OffsetDateTime.now())
+    val actionPlan = ActionPlan(UUID.randomUUID(), referral.id, OffsetDateTime.now())
+    val interventionsBaseUrl = "http://localhost:8080"
+
+    setUpActionPlanLookupNotFound(interventionsBaseUrl, actionPlan.id)
+
+    // When
+    val message = setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl, actionPlan)
+    snsClient!!.publish(message)
+
+    // Then
+    verifyMessageOnDeadLetterQueueAfterFailure()
+  }
+
   private fun verifyCommunityApiCall(communityApiBaseUrl: String, expectedNotificationRequestBody: CreateNotificationRequest) {
     noMessagesCurrentlyOnQueue(sqsClient, queueUrl!!)
+    noMessagesCurrentlyOnQueue(sqsClient, deadLetterQueueUrl!!)
 
     verify(communityApiClient).post(
       "$communityApiBaseUrl/secure/offenders/crn/CRN444/sentences/123/notifications/context/commissioned-rehabilitation-services",
@@ -113,8 +142,18 @@ class SQSListenerTest : IntegrationTestBase() {
     )
   }
 
+  private fun verifyMessageOnDeadLetterQueueAfterFailure() {
+    verifyZeroInteractions(communityApiClient)
+    noMessagesCurrentlyOnQueue(sqsClient, queueUrl!!)
+    oneMessageCurrentlyOnQueue(sqsClient, deadLetterQueueUrl!!)
+  }
+
   private fun setUpActionPlanLookup(interventionsBaseUrl: String, actionPlan: ActionPlan) {
     whenever(interventionsApiClient.get(eq(URI.create("$interventionsBaseUrl/action-plan/${actionPlan.id}")), eq(ActionPlan::class))).thenReturn(Mono.just(actionPlan))
+  }
+
+  private fun setUpActionPlanLookupNotFound(interventionsBaseUrl: String, actionPlanId: UUID) {
+    whenever(interventionsApiClient.get(eq(URI.create("$interventionsBaseUrl/action-plan/$actionPlanId")), eq(ActionPlan::class))).thenReturn(Mono.empty())
   }
 
   private fun setUpReferralLookup(interventionsBaseUrl: String, referral: SentReferral) {
@@ -125,11 +164,11 @@ class SQSListenerTest : IntegrationTestBase() {
     whenever(interventionsApiClient.get(eq(URI.create("$interventionsBaseUrl/intervention/${intervention.id}")), eq(Intervention::class))).thenReturn(Mono.just(intervention))
   }
 
-  private fun setupCommunityApiCall(communityApiBaseUrl: String, createNotificationRequest: CreateNotificationRequest) {
+  private fun setUpCommunityApiCall(communityApiBaseUrl: String, createNotificationRequest: CreateNotificationRequest) {
     whenever(communityApiClient.post("$communityApiBaseUrl/secure/offenders/crn/CRN444/sentences/123/notifications/context/commissioned-rehabilitation-services", createNotificationRequest, Contact::class)).thenReturn(Mono.just(Contact(999L)))
   }
 
-  private fun setUpMessage(interventionsBaseUrl: String, actionPlan: ActionPlan): PublishRequest? {
+  private fun setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl: String, actionPlan: ActionPlan): PublishRequest? {
     val event = InterventionsEvent(1, ACTION_PLAN_SUBMITTED.value, "Description", "$interventionsBaseUrl/action-plan/${actionPlan.id}", OffsetDateTime.now(), emptyMap())
     val messageAttributes = mapOf(
       "eventType" to MessageAttributeValue.builder()
