@@ -22,6 +22,6 @@ class SQSListener(
   }
 }
 
-private data class NotificationMessage(
+data class NotificationMessage(
   @JsonProperty("Message") val message: String
 )

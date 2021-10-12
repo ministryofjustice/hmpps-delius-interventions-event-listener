@@ -1,28 +1,33 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service
 
 import mu.KLogging
-import org.springframework.http.MediaType
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.exception.CommunityApiErrorHandler
+import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ActionPlan
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Contact
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.CreateNotificationRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
-import java.nio.charset.StandardCharsets
-import java.time.OffsetDateTime
-import java.util.UUID
 
 @Service
 class CommunityApiService(
-  private val communityApiWebClient: WebClient,
-  private val communityApiErrorHandler: CommunityApiErrorHandler,
+  @Value("\${services.community-api.baseurl}") private val communityApiBaseURL: String,
+  @Value("\${interventions-ui.baseurl}") private val interventionsUiBaseURL: String,
+  @Value("\${interventions-ui.locations.probation-practitioner.action-plan}") private val ppActionPlanLocation: String,
+  private val communityApiClient: CommunityApiClient,
 ) {
   companion object : KLogging() {
     const val integrationContext = "commissioned-rehabilitation-services"
+    const val communityApiNotificationRequestUrl = "/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}"
   }
 
-  fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention) {
+  fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention): Mono<Contact> {
+
+    val backLinkUrl = buildBackLinkUrl(referral)
+
     val body = CreateNotificationRequest(
       intervention.contractType.code,
       referral.sentAt,
@@ -32,58 +37,38 @@ class CommunityApiService(
         intervention.contractType.name,
         intervention.serviceProvider.name,
         referral.referenceNumber,
-        detailUrl,
+        backLinkUrl,
         "Action Plan Submitted"
       ),
     )
 
     val communityApiUri = UriComponentsBuilder
-      .fromPath("/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}")
+      .fromHttpUrl("$communityApiBaseURL$communityApiNotificationRequestUrl")
       .buildAndExpand(referral.serviceUserCRN, referral.relevantSentenceId, integrationContext)
       .toString()
 
-    communityApiWebClient.post()
-      .uri(communityApiUri)
-      .bodyValue(body)
-      .defaultHeaders()
-      .retrieve()
-      .bodyToMono(Contact::class.java)
-      .onErrorMap { error ->
-        communityApiErrorHandler.handleResponse(error, communityApiUri, body)
-        throw error
-      }
-      .block()
+    logger.debug("Community-api request: $communityApiUri, payload: $body")
+    return communityApiClient.post(communityApiUri, body, Contact::class)
+  }
+
+  private fun buildBackLinkUrl(referral: SentReferral): String {
+    return UriComponentsBuilder.fromHttpUrl(interventionsUiBaseURL)
+      .path(ppActionPlanLocation)
+      .buildAndExpand(referral.id)
+      .toString()
   }
 
   private fun buildNotesField(
     contractTypeName: String,
     primeProviderName: String,
     referenceNumber: String,
-    url: String,
+    backLinkUrl: String,
     eventTypeDescription: String
   ): String {
     return """
       $eventTypeDescription for $contractTypeName Referral $referenceNumber with Prime Provider $primeProviderName
-      $url
+      $backLinkUrl
       (notified via delius-interventions-event-listener)
     """.trimIndent()
   }
-
-  private fun WebClient.RequestHeadersSpec<*>.defaultHeaders(): WebClient.RequestHeadersSpec<*> {
-    return this
-      .accept(MediaType.APPLICATION_JSON)
-      .acceptCharset(StandardCharsets.UTF_8)
-  }
 }
-
-private data class CreateNotificationRequest(
-  val contractType: String,
-  val referralStart: OffsetDateTime,
-  val referralId: UUID,
-  val contactDateTime: OffsetDateTime,
-  val notes: String
-)
-
-private data class Contact(
-  val contactId: Long
-)
