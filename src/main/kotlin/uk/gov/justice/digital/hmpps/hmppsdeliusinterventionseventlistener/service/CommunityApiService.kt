@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.CreateNotificationRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
+import java.net.URI
 
 @Service
 class CommunityApiService(
@@ -48,7 +49,7 @@ class CommunityApiService(
       .toString()
 
     logger.debug("Community-api request: $communityApiUri, payload: $body")
-    return communityApiClient.post(communityApiUri, body, Contact::class)
+    return communityApiClient.post(URI.create(communityApiUri), body, Contact::class)
   }
 
   private fun buildBackLinkUrl(referral: SentReferral): String {

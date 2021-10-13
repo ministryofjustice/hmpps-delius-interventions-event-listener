@@ -136,9 +136,9 @@ class SQSListenerTest : IntegrationTestBase() {
     noMessagesCurrentlyOnQueue(sqsClient, deadLetterQueueUrl!!)
 
     verify(communityApiClient).post(
-      "$communityApiBaseUrl/secure/offenders/crn/CRN444/sentences/123/notifications/context/commissioned-rehabilitation-services",
-      expectedNotificationRequestBody,
-      Contact::class
+      eq(URI.create("$communityApiBaseUrl/secure/offenders/crn/CRN444/sentences/123/notifications/context/commissioned-rehabilitation-services")),
+      eq(expectedNotificationRequestBody),
+      eq(Contact::class)
     )
   }
 
@@ -165,7 +165,13 @@ class SQSListenerTest : IntegrationTestBase() {
   }
 
   private fun setUpCommunityApiCall(communityApiBaseUrl: String, createNotificationRequest: CreateNotificationRequest) {
-    whenever(communityApiClient.post("$communityApiBaseUrl/secure/offenders/crn/CRN444/sentences/123/notifications/context/commissioned-rehabilitation-services", createNotificationRequest, Contact::class)).thenReturn(Mono.just(Contact(999L)))
+    whenever(
+      communityApiClient.post(
+        eq(URI.create("$communityApiBaseUrl/secure/offenders/crn/CRN444/sentences/123/notifications/context/commissioned-rehabilitation-services")),
+        eq(createNotificationRequest),
+        eq(Contact::class)
+      )
+    ).thenReturn(Mono.just(Contact(999L)))
   }
 
   private fun setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl: String, actionPlan: ActionPlan): PublishRequest? {
