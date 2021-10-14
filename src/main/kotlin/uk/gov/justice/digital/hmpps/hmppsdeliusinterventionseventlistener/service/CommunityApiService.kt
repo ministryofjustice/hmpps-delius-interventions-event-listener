@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.Contact
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.CreateNotificationRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ActionPlan
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Contact
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.CreateNotificationRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
 import java.net.URI
