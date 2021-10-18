@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.servic
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.InterventionsApiService
 import java.net.URI
 
-private enum class EventType(val value: String) {
+enum class EventType(val value: String) {
   ACTION_PLAN_SUBMITTED("intervention.action-plan.submitted");
 
   companion object {
@@ -37,6 +37,7 @@ class EventProcessor(
   }
 
   fun processActionPlanSubmittedEvent(event: InterventionsEvent) {
+    logger.debug("processing notify-action-plan-submitted")
     if (featureFlags.crs["notify-action-plan-submitted"] != true) return
 
     val actionPlan = interventionsApiService.get(URI(event.detailUrl), ActionPlan::class).block()
@@ -44,6 +45,6 @@ class EventProcessor(
     val intervention = interventionsApiService.getIntervention(referral.interventionId).block()
 
     logger.debug("notifying nDelius of submitted action plan {} {} {}", kv("actionPlan", actionPlan), kv("referral", referral), kv("intervention", intervention))
-    communityApiService.notifyActionPlanSubmitted(event.detailUrl, actionPlan, referral, intervention)
+    communityApiService.notifyActionPlanSubmitted(event.detailUrl, actionPlan, referral, intervention).block()
   }
 }

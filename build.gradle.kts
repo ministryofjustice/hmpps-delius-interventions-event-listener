@@ -11,9 +11,12 @@ dependencies {
 
   // aws
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.2")
+  implementation("software.amazon.awssdk:sns:2.17.16")
 
   // monitoring & logging
   implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
+
+  testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
 }
 
 dependencyManagement {

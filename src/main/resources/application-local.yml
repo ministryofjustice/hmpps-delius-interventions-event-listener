@@ -14,6 +14,8 @@ spring:
             client-secret: community-api-client
 
 hmpps.sqs:
+  region: eu-west-2
+  localstackUrl: http://localhost:4566
   provider: localstack
   queues:
     deliusinterventionseventsqueue:
@@ -32,6 +34,9 @@ services:
     baseurl: http://localhost:8080
   community-api:
     baseurl: http://localhost:8091
+
+interventions-ui:
+  baseurl: http://localhost:3000
 
 features:
   crs:

@@ -78,3 +78,8 @@ services:
 features:
   crs:
     notify-action-plan-submitted: false
+
+interventions-ui:
+  locations:
+    probation-practitioner:
+      action-plan: "/probation-practitioner/referrals/{id}/action-plan"
