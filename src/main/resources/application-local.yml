@@ -38,3 +38,4 @@ interventions-ui:
 features:
   crs:
     notify-action-plan-submitted: true
+    notify-action-plan-approved: true

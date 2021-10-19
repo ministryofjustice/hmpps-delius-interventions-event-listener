@@ -20,7 +20,6 @@ import software.amazon.awssdk.services.sns.SnsClient
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.EventType.ACTION_PLAN_SUBMITTED
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.InterventionsApiClient
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
@@ -31,11 +30,15 @@ import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ServiceProvider
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.EventType
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.EventType.ACTION_PLAN_APPROVED
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.EventType.ACTION_PLAN_SUBMITTED
 import java.net.URI
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
-class SQSListenerTest : IntegrationTestBase() {
+internal class ActionPlanEventsSQSListenerTest : IntegrationTestBase() {
 
   @Autowired
   @Qualifier("deliusinterventionseventsqueue-sqs-client")
@@ -58,6 +61,12 @@ class SQSListenerTest : IntegrationTestBase() {
 
   @Value("\${hmpps.sqs.localstackUrl}")
   lateinit var localStackUrl: String
+
+  @Value("\${services.interventions-api.baseurl}")
+  lateinit var interventionsBaseUrl: String
+
+  @Value("\${services.community-api.baseurl}")
+  lateinit var communityApiBaseUrl: String
 
   @MockBean
   lateinit var interventionsApiClient: InterventionsApiClient
@@ -85,26 +94,29 @@ class SQSListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Message is consumed of queue bound to topic`() {
+  fun `Action Plan Submitted Message is consumed of queue bound to topic`() {
 
     // Given
     val serviceProvider = ServiceProvider("SP Name", "55555")
-    val intervention = Intervention(UUID.randomUUID(), "Title", "Desc", serviceProvider, ContractType("ACC", "Accommodation"))
-    val referral = SentReferral(UUID.randomUUID(), intervention.id, "CRN444", 123L, "ABCDEFGH", OffsetDateTime.now())
-    val actionPlan = ActionPlan(UUID.randomUUID(), referral.id, OffsetDateTime.now())
-    val interventionsBaseUrl = "http://localhost:8080"
+    val intervention = Intervention(UUID.randomUUID(), serviceProvider, ContractType("ACC", "Accommodation"))
+    val referral = SentReferral(UUID.randomUUID(), intervention.id, "CRN444", 123L, "ABCDEFGH", OffsetDateTime.of(2021, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
+    val actionPlan = ActionPlan(
+      UUID.randomUUID(),
+      referral.id,
+      OffsetDateTime.of(2021, 2, 2, 2, 2, 2, 2, ZoneOffset.UTC),
+      null
+    )
 
     setUpActionPlanLookup(interventionsBaseUrl, actionPlan)
     setUpReferralLookup(interventionsBaseUrl, referral)
     setUpInterventionsLookup(interventionsBaseUrl, intervention)
 
-    val communityApiBaseUrl = "http://localhost:8091"
-    val notificationRequestBody = buildNotificationRequest(intervention, referral, actionPlan)
+    val notificationRequestBody = buildActionPlanNotificationRequest("Action Plan Submitted", intervention, referral, actionPlan.submittedAt)
 
     setUpCommunityApiCall(communityApiBaseUrl, notificationRequestBody)
 
     // When
-    val message = setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl, actionPlan)
+    val message = setUpActionPlanInterventionsMessage(ACTION_PLAN_SUBMITTED, actionPlan.submittedAt, interventionsBaseUrl, actionPlan)
     snsClient!!.publish(message)
 
     // Then
@@ -112,19 +124,53 @@ class SQSListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Message is placed in ded letter queue after successive failures`() {
+  fun `Action Plan Approved Message is consumed of queue bound to topic`() {
 
     // Given
     val serviceProvider = ServiceProvider("SP Name", "55555")
-    val intervention = Intervention(UUID.randomUUID(), "Title", "Desc", serviceProvider, ContractType("ACC", "Accommodation"))
+    val intervention = Intervention(UUID.randomUUID(), serviceProvider, ContractType("ACC", "Accommodation"))
+    val referral = SentReferral(UUID.randomUUID(), intervention.id, "CRN444", 123L, "ABCDEFGH", OffsetDateTime.of(2021, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
+    val actionPlan = ActionPlan(
+      UUID.randomUUID(),
+      referral.id,
+      OffsetDateTime.of(2021, 2, 2, 2, 2, 2, 2, ZoneOffset.UTC),
+      OffsetDateTime.of(2021, 3, 3, 3, 3, 3, 3, ZoneOffset.UTC),
+    )
+
+    setUpActionPlanLookup(interventionsBaseUrl, actionPlan)
+    setUpReferralLookup(interventionsBaseUrl, referral)
+    setUpInterventionsLookup(interventionsBaseUrl, intervention)
+
+    val notificationRequestBody = buildActionPlanNotificationRequest("Action Plan Approved", intervention, referral, actionPlan.approvedAt!!)
+
+    setUpCommunityApiCall(communityApiBaseUrl, notificationRequestBody)
+
+    // When
+    val message = setUpActionPlanInterventionsMessage(ACTION_PLAN_APPROVED, actionPlan.approvedAt!!, interventionsBaseUrl, actionPlan)
+    snsClient!!.publish(message)
+
+    // Then
+    verifyCommunityApiCall(communityApiBaseUrl, notificationRequestBody)
+  }
+
+  @Test
+  fun `Message is placed in dead letter queue after successive failures`() {
+
+    // Given
+    val serviceProvider = ServiceProvider("SP Name", "55555")
+    val intervention = Intervention(UUID.randomUUID(), serviceProvider, ContractType("ACC", "Accommodation"))
     val referral = SentReferral(UUID.randomUUID(), intervention.id, "CRN444", 123L, "ABCDEFGH", OffsetDateTime.now())
-    val actionPlan = ActionPlan(UUID.randomUUID(), referral.id, OffsetDateTime.now())
-    val interventionsBaseUrl = "http://localhost:8080"
+    val actionPlan = ActionPlan(
+      UUID.randomUUID(),
+      referral.id,
+      OffsetDateTime.of(2021, 2, 2, 2, 2, 2, 2, ZoneOffset.UTC),
+      null
+    )
 
     setUpActionPlanLookupNotFound(interventionsBaseUrl, actionPlan.id)
 
     // When
-    val message = setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl, actionPlan)
+    val message = setUpActionPlanInterventionsMessage(ACTION_PLAN_SUBMITTED, actionPlan.submittedAt, interventionsBaseUrl, actionPlan)
     snsClient!!.publish(message)
 
     // Then
@@ -174,12 +220,12 @@ class SQSListenerTest : IntegrationTestBase() {
     ).thenReturn(Mono.just(Contact(999L)))
   }
 
-  private fun setUpActionPlanSubmittedInterventionsMessage(interventionsBaseUrl: String, actionPlan: ActionPlan): PublishRequest? {
-    val event = InterventionsEvent(1, ACTION_PLAN_SUBMITTED.value, "Description", "$interventionsBaseUrl/action-plan/${actionPlan.id}", OffsetDateTime.now(), emptyMap())
+  private fun setUpActionPlanInterventionsMessage(eventType: EventType, occurredAt: OffsetDateTime, interventionsBaseUrl: String, actionPlan: ActionPlan): PublishRequest? {
+    val event = InterventionsEvent(1, eventType.eventTypeValue, "Description", "$interventionsBaseUrl/action-plan/${actionPlan.id}", occurredAt, emptyMap())
     val messageAttributes = mapOf(
       "eventType" to MessageAttributeValue.builder()
         .dataType("String")
-        .stringValue(ACTION_PLAN_SUBMITTED.value)
+        .stringValue(eventType.eventTypeValue)
         .build()
     )
     return PublishRequest.builder()
@@ -189,13 +235,13 @@ class SQSListenerTest : IntegrationTestBase() {
       .build()
   }
 
-  private fun buildNotificationRequest(intervention: Intervention, referral: SentReferral, actionPlan: ActionPlan) =
+  private fun buildActionPlanNotificationRequest(eventTypeDescription: String, intervention: Intervention, referral: SentReferral, occurredAt: OffsetDateTime) =
     CreateNotificationRequest(
       intervention.contractType.code,
       referral.sentAt,
       referral.id,
-      actionPlan.submittedAt,
-      """Action Plan Submitted for ${intervention.contractType.name} Referral ${referral.referenceNumber} with Prime Provider ${intervention.serviceProvider.name}
+      occurredAt,
+      """$eventTypeDescription for ${intervention.contractType.name} Referral ${referral.referenceNumber} with Prime Provider ${intervention.serviceProvider.name}
 http://localhost:3000/probation-practitioner/referrals/${referral.id}/action-plan
 (notified via delius-interventions-event-listener)""",
     )

@@ -15,6 +15,7 @@ generic-service:
     INTERVENTIONSUI_BASEURL: https://hmpps-interventions-ui-dev.apps.live-1.cloud-platform.service.justice.gov.uk
     LOGGING_LEVEL_UK_GOV_JUSTICE_DIGITAL_HMPPS_HMPPSDELIUSINTERVENTIONSEVENTLISTENER: debug
     FEATURES_CRS_NOTIFYACTIONPLANSUBMITTED: true
+    FEATURES_CRS_NOTIFYACTIONPLANAPPROVED: true
 
   # use the same client credentials for community api and interventions api in dev
   namespace_secrets:

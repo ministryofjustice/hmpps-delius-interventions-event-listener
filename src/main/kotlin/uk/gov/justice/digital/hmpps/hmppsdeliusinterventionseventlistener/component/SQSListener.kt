@@ -6,6 +6,7 @@ import mu.KLogging
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.InterventionsEvent
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service.EventProcessor
 
 @Component
 class SQSListener(

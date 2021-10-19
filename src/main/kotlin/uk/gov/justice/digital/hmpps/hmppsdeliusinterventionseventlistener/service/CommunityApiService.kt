@@ -8,10 +8,10 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.Contact
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.CreateNotificationRequest
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ActionPlan
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
 import java.net.URI
+import java.time.OffsetDateTime
 
 @Service
 class CommunityApiService(
@@ -25,7 +25,13 @@ class CommunityApiService(
     const val communityApiNotificationRequestUrl = "/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}"
   }
 
-  fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention): Mono<Contact> {
+  fun notifyActionPlanEvent(
+    eventType: EventType,
+    occurredAt: OffsetDateTime,
+    referral: SentReferral,
+    intervention: Intervention,
+    descriptionForNotesField: String,
+  ): Mono<Contact> {
 
     val backLinkUrl = buildBackLinkUrl(referral)
 
@@ -33,13 +39,13 @@ class CommunityApiService(
       intervention.contractType.code,
       referral.sentAt,
       referral.id,
-      actionPlan.submittedAt,
+      occurredAt,
       buildNotesField(
         intervention.contractType.name,
         intervention.serviceProvider.name,
         referral.referenceNumber,
         backLinkUrl,
-        "Action Plan Submitted"
+        descriptionForNotesField,
       ),
     )
 

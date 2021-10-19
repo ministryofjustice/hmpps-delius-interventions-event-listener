@@ -7,4 +7,5 @@ data class ActionPlan(
   val id: UUID,
   val referralId: UUID,
   val submittedAt: OffsetDateTime,
+  val approvedAt: OffsetDateTime?,
 )

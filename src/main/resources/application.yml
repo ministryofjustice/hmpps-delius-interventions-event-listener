@@ -74,6 +74,7 @@ services:
 features:
   crs:
     notify-action-plan-submitted: false
+    notify-action-plan-approved: false
 
 interventions-ui:
   locations:
