@@ -17,8 +17,9 @@ generic-service:
   # use the same client credentials for community api and interventions api in dev
   namespace_secrets:
     hmpps-auth:
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_COMMUNITYAPICLIENT_CLIENTID: interventions-service-client-id.txt
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_COMMUNITYAPICLIENT_CLIENTSECRET: interventions-service-client-secret.txt
+      # the client that connects to interventions-service and community-api
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTID: interventions-event-client-id.txt
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTSECRET: interventions-event-client-secret.txt
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

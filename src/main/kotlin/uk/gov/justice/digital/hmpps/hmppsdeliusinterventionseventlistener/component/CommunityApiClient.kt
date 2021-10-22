@@ -9,9 +9,9 @@ import kotlin.reflect.KClass
 
 @Component
 class CommunityApiClient(
-  private val communityApiWebClient: WebClient,
+  private val interventionsEventWebClient: WebClient,
   private val communityApiErrorHandler: CommunityApiErrorHandler,
-) : AsyncRestClient(communityApiWebClient) {
+) : AsyncRestClient(interventionsEventWebClient) {
   override fun <T : Any> post(uri: URI, body: Any, klass: KClass<T>): Mono<T> {
     return super
       .post(uri, body, klass)
