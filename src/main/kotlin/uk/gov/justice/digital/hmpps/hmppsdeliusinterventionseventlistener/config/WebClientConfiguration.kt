@@ -28,31 +28,18 @@ class WebClientConfiguration(
   @Value("\${services.community-api.write-timeout-seconds}") private val communityApiWriteTimeout: Int,
 ) {
   companion object {
-    const val interventionsClientRegistrationId = "interventions-client"
-    const val communityApiClientRegistrationId = "community-api-client"
+    const val interventionsEventClientRegistrationId = "interventions-event-client"
   }
 
   @Bean
-  fun interventionsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+  fun interventionsEventWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     return createAuthorizedWebClient(
       authorizedClientManager,
-      interventionsClientRegistrationId,
+      interventionsEventClientRegistrationId,
       interventionsApiBaseUrl,
       interventionsApiConnectTimeout,
       interventionsApiReadTimeout,
       interventionsApiWriteTimeout
-    )
-  }
-
-  @Bean
-  fun communityApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    return createAuthorizedWebClient(
-      authorizedClientManager,
-      communityApiClientRegistrationId,
-      communityApiBaseUrl,
-      communityApiConnectTimeout,
-      communityApiReadTimeout,
-      communityApiWriteTimeout
     )
   }
 

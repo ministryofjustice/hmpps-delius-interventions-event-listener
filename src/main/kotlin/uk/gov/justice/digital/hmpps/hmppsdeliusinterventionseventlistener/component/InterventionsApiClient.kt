@@ -5,5 +5,5 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class InterventionsApiClient(
-  private val interventionsApiWebClient: WebClient
-) : AsyncRestClient(interventionsApiWebClient)
+  private val interventionsEventWebClient: WebClient
+) : AsyncRestClient(interventionsEventWebClient)
