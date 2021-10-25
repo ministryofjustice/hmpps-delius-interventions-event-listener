@@ -6,12 +6,9 @@ spring:
     oauth2:
       client:
         registration:
-          interventions-client:
+          interventions-event-client:
             client-id: interventions
             client-secret: clientsecret
-          community-api-client:
-            client-id: community-api-client
-            client-secret: community-api-client
 
 hmpps.sqs:
   region: eu-west-2

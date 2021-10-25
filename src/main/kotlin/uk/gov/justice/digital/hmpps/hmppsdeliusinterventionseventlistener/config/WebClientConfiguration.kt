@@ -32,7 +32,7 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun interventionsEventWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+  fun interventionsWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     return createAuthorizedWebClient(
       authorizedClientManager,
       interventionsEventClientRegistrationId,
@@ -40,6 +40,18 @@ class WebClientConfiguration(
       interventionsApiConnectTimeout,
       interventionsApiReadTimeout,
       interventionsApiWriteTimeout
+    )
+  }
+
+  @Bean
+  fun communityApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    return createAuthorizedWebClient(
+      authorizedClientManager,
+      interventionsEventClientRegistrationId,
+      communityApiBaseUrl,
+      communityApiConnectTimeout,
+      communityApiReadTimeout,
+      communityApiWriteTimeout
     )
   }
 
