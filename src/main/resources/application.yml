@@ -16,14 +16,10 @@ spring:
           hmpps-auth:
             token-uri: ${services.hmpps-auth.baseurl}/oauth/token
         registration:
-          interventions-client:
+          interventions-event-client:
             provider: hmpps-auth
             authorization-grant-type: client_credentials
             scope: read,write
-          community-api-client:
-            provider: hmpps-auth
-            authorization-grant-type: client_credentials
-            scope: read
       resourceserver:
         jwt:
           issuer-uri: ${services.hmpps-auth.baseurl}/issuer
