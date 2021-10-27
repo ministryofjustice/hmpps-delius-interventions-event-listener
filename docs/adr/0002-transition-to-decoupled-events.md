@@ -9,22 +9,19 @@ Proposed
 ## Context
 
 The [Interventions Service](https://github.com/ministryofjustice/hmpps-interventions-service) already handles several integrations with nDelius in a synchronous way.
-If we switch to using the Delius Event Listener to decouple these integrations from the Interventions Service without careful thought, it is likely we will encounter either missed or duplicate event processing.
+If we switch to using the Delius Interventions Event Listener to decouple these integrations from the Interventions Service without careful thought, it is likely we will encounter either missed or duplicate event processing.
 
 ## Decision
 
-The Interventions Service will manage the roll-out of delius event processing by including a field in the event which instructs the Delius Event Listener whether to do anything.
-In doing so, the Interventions Service can control exactly which events are processed 'internally' (within the Interventions Service) or 'externally' (within the Delius Event Listener).
-This opens up the possibility to test new event processing logic on a small scale, as well as turning external event processing off entirely if needed.
-It means the logic is self-contained within the Interventions Service and there is no sharing of configuration or synchronization to think about.
+Since the creation of duplicate records in nDelius is a known issue within the Interventions Service, it has been decided to tackle this head on, making API calls in Community API idempotent.
+This has the immediate benefit that duplicate event processing (both in Interventions Service and Delius Interventions Event Listener) is not harmful. 
 
-The field will be included in the `additionalInformation` section of the event DTO, and conceptually will indicate if the Interventions Service has already notified nDelius about the event.
-The field will have the name `deliusIntegrationStatus` and will have an enum value of either `NOTIFIED` or `NOT_NOTIFIED`.
+On the issue of the accidental missing of published events, the only consideration is to ensure the event is being processed in the Delius Interventions Event Listener before the integration is disabled in Interventions Service.
+Thus, there is in fact a _requirement_ that there is a period of 'duplicate event processing' (as discussed in the previous paragraph) as integrations are transitioned out of Interventions Service. 
 
 ## Consequences
 
-The inclusion of this additional field implies a contract between the Interventions Service and the Delius Event Listener.
-For events where `deliusIntegrationStatus = NOT_NOTIFIED`, the Interventions Service is relying on a downstream consumer to notify nDelius.
+There are no consequences for either Interventions Service or Delius Interventions Event Listener, other than a considered roll-out of integrations before they are disabled.
 
-In the future, when the Interventions Service is entirely absolved of responsibility to notify nDelius of events, the contract is void, and the responsibility lies entirely within the Delius Event Listener.
+There are consequences for Community API, which must guarantee idempotence for relevant API calls; the details of this are outside the scope of this document.
 
