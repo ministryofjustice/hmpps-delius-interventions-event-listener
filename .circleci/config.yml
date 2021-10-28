@@ -97,7 +97,7 @@ workflows:
   security:
     triggers:
       - schedule:
-          cron: "11 5 * * 1-5"
+          cron: "42 3 * * 1-5"
           filters:
             branches:
               only:
@@ -130,5 +130,3 @@ workflows:
           context:
             - veracode-credentials
             - hmpps-common-vars
-
-
