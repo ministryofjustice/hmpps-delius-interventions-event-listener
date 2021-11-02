@@ -16,7 +16,7 @@ dependencies {
   // monitoring & logging
   implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
 
-  testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
+  testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
 }
 
 dependencyManagement {
