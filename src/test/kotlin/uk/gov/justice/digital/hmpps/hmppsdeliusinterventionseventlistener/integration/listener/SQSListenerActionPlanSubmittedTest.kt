@@ -1,22 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.integration.listener
 
-import com.amazonaws.services.sqs.AmazonSQS
-import com.amazonaws.services.sqs.model.PurgeQueueRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.MockBean
 import reactor.core.publisher.Mono
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.sns.SnsClient
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
@@ -35,11 +28,7 @@ import java.net.URI
 import java.time.OffsetDateTime
 import java.util.UUID
 
-class SQSListenerTest : IntegrationTestBase() {
-
-  @Autowired
-  @Qualifier("deliusinterventionseventsqueue-sqs-client")
-  lateinit var sqsClient: AmazonSQS
+class SQSListenerActionPlanSubmittedTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
@@ -47,42 +36,11 @@ class SQSListenerTest : IntegrationTestBase() {
   @Value("\${hmpps.sqs.topics.interventioneventstopic.arn}")
   lateinit var interventionsEventTopicArn: String
 
-  @Value("\${hmpps.sqs.queues.deliusinterventionseventsqueue.queueName}")
-  lateinit var interventionsEventQueue: String
-
-  @Value("\${hmpps.sqs.queues.deliusinterventionseventsqueue.dlqName}")
-  lateinit var interventionsEventDeadLetterQueue: String
-
-  @Value("\${hmpps.sqs.region}")
-  lateinit var region: String
-
-  @Value("\${hmpps.sqs.localstackUrl}")
-  lateinit var localStackUrl: String
-
   @MockBean
   lateinit var interventionsApiClient: InterventionsApiClient
 
   @MockBean
   lateinit var communityApiClient: CommunityApiClient
-
-  private var snsClient: SnsClient? = null
-
-  private var queueUrl: String? = null
-
-  private var deadLetterQueueUrl: String? = null
-
-  @BeforeEach
-  fun beforeEach() {
-    snsClient = SnsClient.builder()
-      .region(Region.of(region))
-      .credentialsProvider { AwsBasicCredentials.create("test", "test") }
-      .endpointOverride(URI(localStackUrl))
-      .build()
-    queueUrl = sqsClient.getQueueUrl(interventionsEventQueue).queueUrl
-    sqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    deadLetterQueueUrl = sqsClient.getQueueUrl(interventionsEventDeadLetterQueue).queueUrl
-    sqsClient.purgeQueue(PurgeQueueRequest(deadLetterQueueUrl))
-  }
 
   @Test
   fun `Message is consumed of queue bound to topic`() {
@@ -112,7 +70,7 @@ class SQSListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Message is placed in ded letter queue after successive failures`() {
+  fun `Message is placed in dead letter queue after successive failures`() {
 
     // Given
     val serviceProvider = ServiceProvider("SP Name", "55555")

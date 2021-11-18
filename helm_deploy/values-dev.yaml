@@ -14,7 +14,9 @@ generic-service:
     SERVICES_COMMUNITYAPI_BASEURL: https://community-api-secure.test.delius.probation.hmpps.dsd.io
     INTERVENTIONSUI_BASEURL: https://hmpps-interventions-ui-dev.apps.live-1.cloud-platform.service.justice.gov.uk
     LOGGING_LEVEL_UK_GOV_JUSTICE_DIGITAL_HMPPS_HMPPSDELIUSINTERVENTIONSEVENTLISTENER: debug
-    FEATURES_CRS_NOTIFYACTIONPLANSUBMITTED: true
+    FEATURES_CRS_NOTIFYACTIONPLANSUBMITTED: false
+    FEATURES_CRS_NOTIFYSUPPLIERASSESSMENTFEEDBACKSUBMITTED: true
+    FEATURES_CRS_NOTIFYDELIVERYSESSIONFEEDBACKSUBMITTED: true
 
   # use the same client credentials for community api and interventions api in dev
   namespace_secrets:
