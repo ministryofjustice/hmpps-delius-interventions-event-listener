@@ -14,7 +14,7 @@ dependencies {
   implementation("software.amazon.awssdk:sns:2.17.16")
 
   // monitoring & logging
-  implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
+  implementation("io.github.microutils:kotlin-logging-jvm:2.0.13")
 
   testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
 }
