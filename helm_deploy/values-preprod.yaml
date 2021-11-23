@@ -1,0 +1,26 @@
+---
+# Per environment values which override defaults in hmpps-delius-interventions-event-listener/values.yaml
+
+generic-service:
+  replicaCount: 1
+
+  ingress:
+    host: hmpps-delius-interventions-event-listener-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
+
+  env:
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    SERVICES_INTERVENTIONSAPI_BASEURL: https://hmpps-interventions-service-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
+    SERVICES_HMPPSAUTH_BASEURL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
+    SERVICES_COMMUNITYAPI_BASEURL: https://community-api-secure.pre-prod.delius.probation.hmpps.dsd.io
+    INTERVENTIONSUI_BASEURL: https://hmpps-interventions-ui-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
+    LOGGING_LEVEL_UK_GOV_JUSTICE_DIGITAL_HMPPS_HMPPSDELIUSINTERVENTIONSEVENTLISTENER: info
+    FEATURES_CRS_NOTIFYACTIONPLANSUBMITTED: false
+    FEATURES_CRS_NOTIFYSUPPLIERASSESSMENTFEEDBACKSUBMITTED: true
+    FEATURES_CRS_NOTIFYDELIVERYSESSIONFEEDBACKSUBMITTED: true
+
+  # use the same client credentials for community api and interventions api in preprod
+  namespace_secrets:
+    hmpps-auth:
+      # the client that connects to interventions-service and community-api
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTID: interventions-event-client-id.txt
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTSECRET: interventions-event-client-secret.txt
