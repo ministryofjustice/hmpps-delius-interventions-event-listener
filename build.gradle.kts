@@ -8,6 +8,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+  // Issue with 4.1.67.Final from spring-boot-starter-webflux
+  implementation("io.netty:netty-codec:4.1.70.Final")
 
   // aws
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.3")
@@ -17,12 +19,6 @@ dependencies {
   implementation("io.github.microutils:kotlin-logging-jvm:2.1.0")
 
   testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
-}
-
-dependencyManagement {
-  imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-messaging:2.3.2")
-  }
 }
 
 configurations {
