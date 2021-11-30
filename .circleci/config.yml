@@ -67,6 +67,8 @@ workflows:
           name: deploy_dev
           env: "dev"
           context: hmpps-common-vars
+          slack_notification: true
+          slack_channel_name: "interventions-dev-notifications"
           filters:
             branches:
               only: [main]
@@ -83,6 +85,8 @@ workflows:
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
+          slack_notification: true
+          slack_channel_name: "interventions-dev-notifications"
           context:
             - hmpps-common-vars
             - hmpps-delius-interventions-event-listener-preprod
@@ -96,7 +100,7 @@ workflows:
 #          name: deploy_prod
 #          env: "prod"
 #          slack_notification: true
-#          slack_channel_name: << pipeline.parameters.releases-slack-channel >>
+#          slack_channel_name: "interventions"
 #          context:
 #            - hmpps-common-vars
 #            - hmpps-delius-interventions-event-listener-prod
