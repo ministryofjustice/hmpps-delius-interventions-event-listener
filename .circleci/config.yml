@@ -91,7 +91,7 @@ workflows:
           slack_channel_name: "interventions-dev-notifications"
           context:
             - hmpps-common-vars
-            - hmpps-delius-interventions-event-listener-preprod
+            - hmpps-interventions-preprod-deploy
           requires:
             - request-preprod-approval
 #      - request-prod-approval:
