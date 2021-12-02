@@ -43,42 +43,57 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - validate:
-          filters:
-            tags:
-              ignore: /.*/
+      - validate
       - hmpps/helm_lint:
           name: helm_lint
       - hmpps/build_docker:
-          name: build_docker
+          name: build_docker_branch
+          publish: false
+          persist_container_image: true
           filters:
             branches:
-              only:
-                - main
+              ignore: [main]
+      - hmpps/build_docker:
+          name: build_docker_main
+          publish: true
+          persist_container_image: true
+          filters:
+            branches:
+              only: [main]
+      - hmpps/trivy_pipeline_scan:
+          name: trivy_scan
+          requires: [build_docker_branch, build_docker_main]
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
-          context: hmpps-common-vars
+          context:
+            - hmpps-common-vars
+            - hmpps-interventions-dev-deploy
+          slack_notification: true
+          slack_channel_name: "interventions-dev-notifications"
           filters:
             branches:
-              only:
-                - main
+              only: [main]
           requires:
             - validate
-            - build_docker
+            - build_docker_branch
+            - build_docker_main
             - helm_lint
-#      - request-preprod-approval:
-#          type: approval
-#          requires:
-#            - deploy_dev
-#      - hmpps/deploy_env:
-#          name: deploy_preprod
-#          env: "preprod"
-#          context:
-#            - hmpps-common-vars
-#            - hmpps-delius-interventions-event-listener-preprod
-#          requires:
-#            - request-preprod-approval
+            - trivy_scan
+      - request-preprod-approval:
+          type: approval
+          requires:
+            - deploy_dev
+      - hmpps/deploy_env:
+          name: deploy_preprod
+          env: "preprod"
+          slack_notification: true
+          slack_channel_name: "interventions-dev-notifications"
+          context:
+            - hmpps-common-vars
+            - hmpps-delius-interventions-event-listener-preprod
+          requires:
+            - request-preprod-approval
 #      - request-prod-approval:
 #          type: approval
 #          requires:
@@ -87,7 +102,7 @@ workflows:
 #          name: deploy_prod
 #          env: "prod"
 #          slack_notification: true
-#          slack_channel_name: << pipeline.parameters.releases-slack-channel >>
+#          slack_channel_name: "interventions"
 #          context:
 #            - hmpps-common-vars
 #            - hmpps-delius-interventions-event-listener-prod
@@ -97,7 +112,7 @@ workflows:
   security:
     triggers:
       - schedule:
-          cron: "11 5 * * 1-5"
+          cron: "42 3 * * 1-5"
           filters:
             branches:
               only:
@@ -130,5 +145,3 @@ workflows:
           context:
             - veracode-credentials
             - hmpps-common-vars
-
-

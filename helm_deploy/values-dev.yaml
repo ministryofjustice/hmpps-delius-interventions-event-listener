@@ -6,19 +6,25 @@ generic-service:
 
   ingress:
     host: hmpps-delius-interventions-event-listener-dev.apps.live-1.cloud-platform.service.justice.gov.uk
+    contextColour: green
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     SERVICES_INTERVENTIONSAPI_BASEURL: https://hmpps-interventions-service-dev.apps.live-1.cloud-platform.service.justice.gov.uk
     SERVICES_HMPPSAUTH_BASEURL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
     SERVICES_COMMUNITYAPI_BASEURL: https://community-api-secure.test.delius.probation.hmpps.dsd.io
+    INTERVENTIONSUI_BASEURL: https://hmpps-interventions-ui-dev.apps.live-1.cloud-platform.service.justice.gov.uk
     LOGGING_LEVEL_UK_GOV_JUSTICE_DIGITAL_HMPPS_HMPPSDELIUSINTERVENTIONSEVENTLISTENER: debug
+    FEATURES_CRS_NOTIFYACTIONPLANSUBMITTED: false
+    FEATURES_CRS_NOTIFYSUPPLIERASSESSMENTFEEDBACKSUBMITTED: true
+    FEATURES_CRS_NOTIFYDELIVERYSESSIONFEEDBACKSUBMITTED: true
 
   # use the same client credentials for community api and interventions api in dev
   namespace_secrets:
     hmpps-auth:
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_COMMUNITYAPICLIENT_CLIENTID: interventions-service-client-id.txt
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_COMMUNITYAPICLIENT_CLIENTSECRET: interventions-service-client-secret.txt
+      # the client that connects to interventions-service and community-api
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTID: interventions-event-client-id.txt
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTSECRET: interventions-event-client-secret.txt
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

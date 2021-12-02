@@ -1,28 +1,44 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service
 
 import mu.KLogging
-import org.springframework.http.MediaType
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
-import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.exception.CommunityApiErrorHandler
+import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.AppointmentOutcomeRequest
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.Contact
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.communityapi.CreateNotificationRequest
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.ActionPlan
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.DeliverySession
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Intervention
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SentReferral
-import java.nio.charset.StandardCharsets
-import java.time.OffsetDateTime
-import java.util.UUID
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SessionFeedback
+import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.SupplierAssessment
+import java.net.URI
 
 @Service
 class CommunityApiService(
-  private val communityApiWebClient: WebClient,
-  private val communityApiErrorHandler: CommunityApiErrorHandler,
+  @Value("\${services.community-api.baseurl}") private val communityApiBaseURL: String,
+  @Value("\${interventions-ui.baseurl}") private val interventionsUiBaseURL: String,
+  private val communityApiClient: CommunityApiClient,
 ) {
   companion object : KLogging() {
     const val integrationContext = "commissioned-rehabilitation-services"
+    const val communityApiNotificationRequestUrl = "/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}"
+    const val communityApiAppointmentOutcomeRequestUrl = "/secure/offenders/crn/{crn}/appointments/{appointmentId}/outcome/context/{contextName}"
+    const val ppActionPlanLocation = "/probation-practitioner/referrals/{id}/action-plan"
+    const val ppSupplierAssessmentFeedbackLocation = "/probation-practitioner/referrals/{id}/supplier-assessment/post-assessment-feedback"
+    const val ppDeliverySessionFeedbackLocation = "/probation-practitioner/referrals/{id}/appointment/{sessionNumber}/post-session-feedback"
   }
 
-  fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention) {
+  fun notifyActionPlanSubmitted(detailUrl: String, actionPlan: ActionPlan, referral: SentReferral, intervention: Intervention): Mono<Contact> {
+
+    val backLinkUrl = UriComponentsBuilder.fromHttpUrl(interventionsUiBaseURL)
+      .path(ppActionPlanLocation)
+      .buildAndExpand(referral.id)
+      .toString()
+
     val body = CreateNotificationRequest(
       intervention.contractType.code,
       referral.sentAt,
@@ -32,58 +48,83 @@ class CommunityApiService(
         intervention.contractType.name,
         intervention.serviceProvider.name,
         referral.referenceNumber,
-        detailUrl,
+        backLinkUrl,
         "Action Plan Submitted"
       ),
     )
 
     val communityApiUri = UriComponentsBuilder
-      .fromPath("/secure/offenders/crn/{crn}/sentences/{sentenceId}/notifications/context/{contextName}")
+      .fromHttpUrl("$communityApiBaseURL$communityApiNotificationRequestUrl")
       .buildAndExpand(referral.serviceUserCRN, referral.relevantSentenceId, integrationContext)
       .toString()
 
-    communityApiWebClient.post()
-      .uri(communityApiUri)
-      .bodyValue(body)
-      .defaultHeaders()
-      .retrieve()
-      .bodyToMono(Contact::class.java)
-      .onErrorMap { error ->
-        communityApiErrorHandler.handleResponse(error, communityApiUri, body)
-        throw error
-      }
-      .block()
+    logger.debug("Community-api request: $communityApiUri, payload: $body")
+    return communityApiClient.post(URI.create(communityApiUri), body, Contact::class)
+  }
+
+  fun notifySupplierAssessmentFeedbackSubmitted(detailUrl: String, supplierAssessment: SupplierAssessment, deliusAppointmentId: String, referral: SentReferral, intervention: Intervention): Mono<Contact> {
+
+    val backLinkUrl = UriComponentsBuilder.fromHttpUrl(interventionsUiBaseURL)
+      .path(ppSupplierAssessmentFeedbackLocation)
+      .buildAndExpand(referral.id)
+      .toString()
+
+    val sessionFeedback = supplierAssessment.currentAppointment.sessionFeedback
+    return notifyAppointmentFeedbackSubmitted(sessionFeedback, intervention, referral, backLinkUrl, deliusAppointmentId)
+  }
+
+  fun notifyDeliverySessionFeedbackSubmitted(detailUrl: String, deliverySession: DeliverySession, deliusAppointmentId: String, referral: SentReferral, intervention: Intervention): Mono<Contact> {
+
+    val backLinkUrl = UriComponentsBuilder.fromHttpUrl(interventionsUiBaseURL)
+      .path(ppDeliverySessionFeedbackLocation)
+      .buildAndExpand(referral.id, deliverySession.sessionNumber)
+      .toString()
+
+    val sessionFeedback = deliverySession.sessionFeedback
+    return notifyAppointmentFeedbackSubmitted(sessionFeedback, intervention, referral, backLinkUrl, deliusAppointmentId)
+  }
+
+  private fun notifyAppointmentFeedbackSubmitted(sessionFeedback: SessionFeedback, intervention: Intervention, referral: SentReferral, backLinkUrl: String, deliusAppointmentId: String): Mono<Contact> {
+    val notifyPP = setNotifyPPIfRequired(sessionFeedback)
+
+    val body = AppointmentOutcomeRequest(
+      buildNotesField(
+        intervention.contractType.name,
+        intervention.serviceProvider.name,
+        referral.referenceNumber,
+        backLinkUrl,
+        "Session Feedback Recorded"
+      ),
+      sessionFeedback.attendance.attended,
+      notifyPP
+    )
+
+    val communityApiUri = UriComponentsBuilder
+      .fromHttpUrl("$communityApiBaseURL$communityApiAppointmentOutcomeRequestUrl")
+      .buildAndExpand(referral.serviceUserCRN, deliusAppointmentId, integrationContext)
+      .toString()
+
+    logger.debug("Community-api request: $communityApiUri, payload: $body")
+    return communityApiClient.post(URI.create(communityApiUri), body, Contact::class)
   }
 
   private fun buildNotesField(
     contractTypeName: String,
     primeProviderName: String,
     referenceNumber: String,
-    url: String,
+    backLinkUrl: String,
     eventTypeDescription: String
   ): String {
     return """
       $eventTypeDescription for $contractTypeName Referral $referenceNumber with Prime Provider $primeProviderName
-      $url
+      $backLinkUrl
       (notified via delius-interventions-event-listener)
     """.trimIndent()
   }
 
-  private fun WebClient.RequestHeadersSpec<*>.defaultHeaders(): WebClient.RequestHeadersSpec<*> {
-    return this
-      .accept(MediaType.APPLICATION_JSON)
-      .acceptCharset(StandardCharsets.UTF_8)
+  fun setNotifyPPIfRequired(sessionFeedback: SessionFeedback): Boolean {
+    val attendance = sessionFeedback.attendance
+    val behaviour = sessionFeedback.behaviour
+    return "no".equals(attendance.attended, true) || behaviour.notifyProbationPractitioner ?: false
   }
 }
-
-private data class CreateNotificationRequest(
-  val contractType: String,
-  val referralStart: OffsetDateTime,
-  val referralId: UUID,
-  val contactDateTime: OffsetDateTime,
-  val notes: String
-)
-
-private data class Contact(
-  val contactId: Long
-)
