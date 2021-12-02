@@ -6,7 +6,6 @@ generic-service:
 
   ingress:
     host: hmpps-delius-interventions-event-listener-dev.apps.live-1.cloud-platform.service.justice.gov.uk
-    contextColour: green
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
