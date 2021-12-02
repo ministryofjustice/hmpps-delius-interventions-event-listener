@@ -16,14 +16,10 @@ spring:
           hmpps-auth:
             token-uri: ${services.hmpps-auth.baseurl}/oauth/token
         registration:
-          interventions-client:
+          interventions-event-client:
             provider: hmpps-auth
             authorization-grant-type: client_credentials
             scope: read,write
-          community-api-client:
-            provider: hmpps-auth
-            authorization-grant-type: client_credentials
-            scope: read
       resourceserver:
         jwt:
           issuer-uri: ${services.hmpps-auth.baseurl}/issuer
@@ -77,4 +73,6 @@ services:
 # all features should be disabled by default and enabled per-environment
 features:
   crs:
-    notify-action-plan-submitted: false
+    notify-action-plan-submitted: true
+    notify-supplier-assessment-feedback-submitted: true
+    notify-delivery-session-feedback-submitted: true

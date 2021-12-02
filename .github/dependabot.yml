@@ -1,0 +1,11 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: Europe/London
+  ignore:
+    - dependency-name: "software.amazon.awssdk:*"
+      update-types: ["version-update:semver-patch"]
