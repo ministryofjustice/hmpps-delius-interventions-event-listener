@@ -24,3 +24,6 @@ generic-service:
       # the client that connects to interventions-service and community-api
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTID: interventions-event-client-id.txt
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTSECRET: interventions-event-client-secret.txt
+
+  generic-prometheus-alerts:
+    alertSeverity: hmpps-interventions-non-prod

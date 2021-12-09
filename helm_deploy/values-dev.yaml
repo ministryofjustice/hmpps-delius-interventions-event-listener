@@ -25,7 +25,5 @@ generic-service:
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTID: interventions-event-client-id.txt
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_INTERVENTIONSEVENTCLIENT_CLIENTSECRET: interventions-event-client-secret.txt
 
-# CloudPlatform AlertManager receiver to route promethues alerts to slack
-# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
-# generic-prometheus-alerts:
-#   alertSeverity: hmpps-delius-interventions-event-listener-dev
+  generic-prometheus-alerts:
+    alertSeverity: hmpps-interventions-non-prod
