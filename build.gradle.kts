@@ -8,8 +8,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-  // Issue with 4.1.67.Final from spring-boot-starter-webflux
+  // bumps for security, until bumped in upstream
   implementation("io.netty:netty-codec:4.1.71.Final")
+  implementation("org.apache.logging.log4j:log4j-api:2.15.0")
 
   // aws
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.3")
