@@ -80,10 +80,6 @@ workflows:
             - build_docker_main
             - helm_lint
             - trivy_scan
-      - request-preprod-approval:
-          type: approval
-          requires:
-            - deploy_dev
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -93,7 +89,7 @@ workflows:
             - hmpps-common-vars
             - hmpps-interventions-preprod-deploy
           requires:
-            - request-preprod-approval
+            - deploy_dev
 #      - request-prod-approval:
 #          type: approval
 #          requires:
