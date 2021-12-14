@@ -9,7 +9,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   // bumps for security, until bumped in upstream
-  implementation("io.netty:netty-codec:4.1.71.Final")
+  implementation("io.netty:netty-codec:4.1.72.Final")
   implementation("org.apache.logging.log4j:log4j-api:2.15.0")
 
   // aws
