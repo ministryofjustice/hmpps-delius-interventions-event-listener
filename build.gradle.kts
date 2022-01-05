@@ -11,7 +11,7 @@ dependencies {
   // bumps for security, until bumped in upstream
   implementation("io.netty:netty-codec:4.1.72.Final")
   implementation("org.apache.logging.log4j:log4j-api:2.17.0") // CVE-2021-44228
-  implementation("org.apache.logging.log4j:log4j-to-slf4j:2.17.0") // CVE-2021-44228
+  implementation("org.apache.logging.log4j:log4j-to-slf4j:2.17.1") // CVE-2021-44228
 
   // aws
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.3")
