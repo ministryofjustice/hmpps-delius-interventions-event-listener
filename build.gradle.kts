@@ -15,7 +15,7 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-to-slf4j:2.17.1") // CVE-2021-44228
 
   // aws
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.4")
   implementation("software.amazon.awssdk:sns:2.17.16")
 
   // monitoring & logging
