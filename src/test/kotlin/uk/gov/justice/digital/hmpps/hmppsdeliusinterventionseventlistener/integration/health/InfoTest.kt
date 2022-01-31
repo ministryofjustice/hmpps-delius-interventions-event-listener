@@ -16,7 +16,7 @@ class InfoTest : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("app.name").isEqualTo("Hmpps Delius Interventions Event Listener")
+      .jsonPath("build.name").isEqualTo("hmpps-delius-interventions-event-listener")
   }
 
   @Test
