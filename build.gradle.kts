@@ -8,6 +8,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+  // bumps for security, until bumped in upstream
+  implementation("org.apache.tomcat.embed:tomcat-embed-core:9.0.58") // CVE-2022-23181
+  implementation("org.apache.tomcat.embed:tomcat-embed-websocket:9.0.58") // CVE-2022-23181
 
   // aws
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.5")
