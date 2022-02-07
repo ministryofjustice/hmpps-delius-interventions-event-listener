@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.service
 
-import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.component.CommunityApiClient
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Attendance
 import uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.model.crs.Behaviour

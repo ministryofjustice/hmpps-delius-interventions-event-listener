@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsdeliusinterventionseventlistener.integration.listener
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
-import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -101,7 +101,7 @@ class SQSListenerActionPlanSubmittedTest : IntegrationTestBase() {
   }
 
   private fun verifyMessageOnDeadLetterQueueAfterFailure() {
-    verifyZeroInteractions(communityApiClient)
+    verifyNoInteractions(communityApiClient)
     noMessagesCurrentlyOnQueue(sqsClient, queueUrl!!)
     oneMessageCurrentlyOnQueue(sqsClient, deadLetterQueueUrl!!)
   }
