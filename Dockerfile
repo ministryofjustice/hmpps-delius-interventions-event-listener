@@ -10,6 +10,10 @@ RUN ./gradlew assemble -Dorg.gradle.daemon=false
 FROM adoptopenjdk/openjdk16:alpine-jre
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
+# force a rebuild of `apk upgrade` below by invalidating the BUILD_NUMBER env variable on every commit
+ARG BUILD_NUMBER
+ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
+
 RUN apk upgrade --no-cache && \
     apk add --no-cache \
       curl \
@@ -29,8 +33,5 @@ COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.json /app
 COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.dev.json /app
 
 USER 2000
-
-ARG BUILD_NUMBER
-ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
 
 ENTRYPOINT ["java", "-javaagent:/app/agent.jar", "-jar", "/app/app.jar"]
