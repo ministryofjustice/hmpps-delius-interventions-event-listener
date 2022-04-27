@@ -15,6 +15,7 @@ dependencies {
 
   // monitoring & logging
   implementation("io.github.microutils:kotlin-logging-jvm:2.1.21")
+  implementation("net.logstash.logback:logstash-logback-encoder:7.1.1")
 
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
