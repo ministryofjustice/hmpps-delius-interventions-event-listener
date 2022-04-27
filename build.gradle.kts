@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.5"
   kotlin("plugin.spring") version "1.6.21"
 }
 
@@ -15,6 +15,7 @@ dependencies {
 
   // monitoring & logging
   implementation("io.github.microutils:kotlin-logging-jvm:2.1.21")
+  implementation("net.logstash.logback:logstash-logback-encoder:7.1.1")
 
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
