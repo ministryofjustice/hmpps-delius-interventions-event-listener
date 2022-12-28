@@ -1,5 +1,11 @@
 # HMPPS Delius Interventions Event Listener
 
+This project was an experiment to move to an async event-based integration model.
+
+Other priorities meant we never managed to put this into production.
+
+Archived on 2022-12-28.
+
 ## Getting started
 
 ### External dependencies
